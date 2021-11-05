@@ -17,10 +17,22 @@ import (
 func Register(c *gin.Context) {
 	db := common.GetDB()
 
-	name := c.PostForm("name")
-	password := c.PostForm("password")
+	// name := c.PostForm("name")
+	// password := c.PostForm("password")
 
-	fmt.Println(name + " " + password)
+	// var requestMap = make(map[string]string)
+	// json.NewDecoder(c.Request.Body).Decode(&requestMap)
+
+	// var requestUser = model.User{}
+	// json.NewDecoder(c.Request.Body).Decode(&requestUser)
+
+	var requestUser = model.User{}
+	c.Bind(&requestUser)
+
+	name := requestUser.Name
+	password := requestUser.Password
+
+	fmt.Println("传入的用户注册参数", requestUser)
 
 	if len(name) < 3 {
 		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "用户名太短")
@@ -42,7 +54,16 @@ func Register(c *gin.Context) {
 		Password: string(hasedPassword),
 	}
 	db.Create(&newUser)
-	response.Success(c, nil, "注册成功")
+
+	//token
+	token, err := common.ReleaseToken(newUser)
+	if err != nil {
+		response.Response(c, http.StatusUnprocessableEntity, 500, nil, "系统异常！")
+		log.Printf("token generate error: ", err)
+		return
+	}
+
+	response.Success(c, gin.H{"token": token}, "注册成功")
 }
 
 func isNameExist(db *gorm.DB, name string) bool {
