@@ -3,7 +3,9 @@ package controller
 import (
 	"fmt"
 	"ginExample/common"
+	"ginExample/dto"
 	"ginExample/model"
+	"ginExample/response"
 	"log"
 	"net/http"
 
@@ -21,18 +23,18 @@ func Register(c *gin.Context) {
 	fmt.Println(name + " " + password)
 
 	if len(name) < 3 {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "name too short"})
+		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "用户名太短")
 		return
 	}
 
 	//query & insert
 	if isNameExist(db, name) {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"code": 422, "msg": "用户已经存在"})
+		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "用户已经存在")
 		return
 	}
 	hasedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"code": 500, "msg": "加密出错"})
+		response.Response(c, http.StatusInternalServerError, 500, nil, "加密出错")
 		return
 	}
 	newUser := model.User{
@@ -40,11 +42,7 @@ func Register(c *gin.Context) {
 		Password: string(hasedPassword),
 	}
 	db.Create(&newUser)
-
-	c.JSON(200, gin.H{
-		"code": 200,
-		"msg":  "注册成功",
-	})
+	response.Success(c, nil, "注册成功")
 }
 
 func isNameExist(db *gorm.DB, name string) bool {
@@ -66,26 +64,21 @@ func Login(c *gin.Context) {
 	var user model.User
 	db.Where("name = ?", name).First(&user)
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"code": 400, "msg": "密码错误"})
+		response.Response(c, http.StatusUnprocessableEntity, 400, nil, "密码错误")
 		return
 	}
 
 	//token
 	token, err := common.ReleaseToken(user)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"code": 500, "msg": "系统异常！"})
+		response.Response(c, http.StatusUnprocessableEntity, 500, nil, "系统异常！")
 		log.Printf("token generate error: ", err)
 		return
 	}
-
-	c.JSON(200, gin.H{
-		"code": 200,
-		"data": gin.H{"token": token},
-		"msg":  "登录成功",
-	})
+	response.Success(c, gin.H{"token": token}, "登录成功")
 }
 
 func Info(c *gin.Context) {
 	user, _ := c.Get("user")
-	c.JSON(http.StatusOK, gin.H{"code": 200, "data": gin.H{"user": user}})
+	response.Success(c, gin.H{"user": dto.ToUserDto(user.(model.User))}, "获取用户信息成功")
 }
