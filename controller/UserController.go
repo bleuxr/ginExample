@@ -6,7 +6,6 @@ import (
 	"ginExample/dto"
 	"ginExample/model"
 	"ginExample/response"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -59,7 +58,7 @@ func Register(c *gin.Context) {
 	token, err := common.ReleaseToken(newUser)
 	if err != nil {
 		response.Response(c, http.StatusUnprocessableEntity, 500, nil, "系统异常！")
-		log.Printf("token generate error: ", err)
+		// log.Printf("token generate error: ", err)
 		return
 	}
 
@@ -95,7 +94,7 @@ func Login(c *gin.Context) {
 	token, err := common.ReleaseToken(user)
 	if err != nil {
 		response.Response(c, http.StatusUnprocessableEntity, 500, nil, "系统异常！")
-		log.Printf("token generate error: ", err)
+		// log.Printf("token generate error: ", err)
 		return
 	}
 	response.Success(c, gin.H{"token": token}, "登录成功")
