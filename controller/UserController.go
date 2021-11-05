@@ -57,13 +57,15 @@ func isNameExist(db *gorm.DB, name string) bool {
 func Login(c *gin.Context) {
 	db := common.GetDB()
 
-	name := c.PostForm("name")
-	password := c.PostForm("password")
+	// name := c.PostForm("name")
+	// password := c.PostForm("password")
+	var requestUser = model.User{}
+	c.Bind(&requestUser)
 
 	//check password
 	var user model.User
-	db.Where("name = ?", name).First(&user)
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	db.Where("name = ?", requestUser.Name).First(&user)
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(requestUser.Password)); err != nil {
 		response.Response(c, http.StatusUnprocessableEntity, 400, nil, "密码错误")
 		return
 	}

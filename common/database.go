@@ -3,6 +3,7 @@ package common
 import (
 	"fmt"
 	"ginExample/model"
+	"net/url"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
@@ -27,7 +28,7 @@ func InitDB() *gorm.DB {
 		port,
 		database,
 		charset,
-		loc)
+		url.QueryEscape(loc))
 	fmt.Printf(args)
 	// dsn := "root:MyNewPass4!@tcp(127.0.0.1:3306)/mydb?charset=utf8mb4&parseTime=True&loc=Local"
 	// db, err := gorm.Open(driverName.Open(args), &gorm.Config{})

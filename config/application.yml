@@ -1,5 +1,5 @@
 server:
-  port: 8001
+  port: 8080
 datasource:
   # driverName: mysql
   host: 127.0.0.1
@@ -8,4 +8,4 @@ datasource:
   username: root
   password: MyNewPass4!
   charset: utf8mb4
-  loc: Local
+  loc: Asia/Shanghai
